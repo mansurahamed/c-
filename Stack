@@ -1,0 +1,188 @@
+#include <iostream>
+#include<string>
+#include<math.h>
+using namespace std;
+
+template<class T> class Stack{
+    private:
+        struct Node
+        {
+            T data;
+            Node *next;
+            Node(T val, Node* n = 0): data(val), next(n){}
+        };
+        Node *head = 0;
+    public:
+        Stack():head(0){}
+        bool empty() const{return head==0;}
+        T peep();
+        T pop();
+        void push(T val);
+        void display();
+};
+class StackException{
+    private:
+        string msg;
+    public:
+        StackException(string m):msg(m){}
+        string getMessage(){
+            return msg;
+        }
+};
+
+template<class T> void Stack<T>::push( T val){
+    Node* n = new Node(val);
+    if(!empty()){  //stack empty
+        n->next = head;
+    }
+    head = n;
+    
+}
+template<class T> T Stack<T>:: peep(){
+    if(empty()) throw StackException("Stack Empty!");
+    return head->data;
+}
+template<class T> T Stack<T>::pop(){
+    if(empty()) throw StackException("Stack Empty!");
+    T val = head->data;
+    head= head->next;
+    return val;
+}
+template<class T>void Stack<T>:: display(){
+    for(Node* n = head;n!=0; n=n->next)
+   cout<<n->data<<" ";
+}
+
+class PostFix{
+    private:
+        string infix;
+    public:
+        PostFix(string s):infix(s){}
+        int precedence(char op){
+            switch(op){
+                case '^':
+                return 3;
+                case '*':
+                case '/':
+                return 2;
+                case '+':
+                case '-':
+                return 1;
+            }
+        }
+        bool isOperator( char c){
+            string operands = "^*/+-()";
+            int i = 0;
+            while(operands[i]){
+                if(operands[i]==c)return true;
+                i++;
+            }
+            return false;
+        }
+        double valueOf(char c){
+            switch(c)
+            {
+                case 'a': return 2;
+                case 'b': return 3;
+                case 'c': return 5;
+                case 'd': return 2;
+                case 'e': return 2;
+                case 'f': return 1;
+                break;
+            }
+            double b = c;
+            return b;
+        }
+        string convert(){
+            string prefix = "";
+            int i=0;
+            Stack<char> stack, temp;
+            while(infix[i]) //looping through string
+            {
+                char item = infix[i];
+                if(!isOperator(item)) prefix+=item; // Not operator
+                else{  //operator found
+                    char p;
+                    if(item == ')') //closing bracket found
+                    {
+                         try{
+                
+                         while((stack.peep())!='('){
+                             p =  stack.pop();
+                            prefix+=p;   
+                         }
+                         stack.pop(); //Poping the left parenthesis
+                         }
+                         catch(StackException e){
+                             cout<<e.getMessage()<<endl;
+                         }
+                         
+                    }
+                    else{
+                        
+                    
+                        while(!stack.empty() && (stack.peep())!='('){ //Looking for left parenthesis
+                                 p = stack.pop();
+                                if(precedence(p)>=precedence(item))prefix+=p;
+                                else temp.push(p);
+                            }
+                                while(!temp.empty()){stack.push(temp.pop());} //reinserting in stack
+                                stack.push(item);
+                         }
+                    }
+                    i++;
+                  
+            }
+            while(!stack.empty()){ char q ; if(isOperator(q = stack.pop()))prefix+=q; }
+            return prefix;
+        }
+        
+        double doMath(double a,double b,char opt){
+            switch(opt)
+            {
+                case '+': return a+b;
+                case '-': return a-b;
+                case '*': return a*b;
+                case '/': return a/b;
+                case '^': return pow(a,b);
+            }
+        }
+        double evaluate(){
+            int i;
+            string prefix = convert();
+            Stack<char> stack;
+            while(prefix[i]){
+                char item = prefix[i];
+                if(!isOperator(item)) //operands
+                {
+                    try{
+                    stack.push(item);
+                    }
+                    catch(StackException e){
+                        cout<<e.getMessage()<<endl;
+                    }
+                }
+                else //oprator
+                {
+                    try{
+                    char temp1 = stack.pop();
+                    char temp2 = stack.pop();
+                     stack.push(doMath(valueOf(temp2),valueOf(temp1),item));
+                    }
+                    catch(StackException e){
+                        cout<<e.getMessage()<<endl;
+                    }
+                }
+                i++;
+            }
+            return stack.pop();
+        }
+};
+
+int main()
+{
+   PostFix p("(a+b)-c*d/e^f");
+   cout<<endl<< p.convert();
+   cout<<endl<< p.evaluate();
+   return 0;
+}
