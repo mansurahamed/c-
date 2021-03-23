@@ -1,0 +1,168 @@
+/******************************************************************************
+
+                              Online C++ Compiler.
+               Code, Compile, Run and Debug C++ program online.
+Write your code in this editor and press "Run" button to compile and execute it.
+
+*******************************************************************************/
+
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+template<class T> class Queue{
+    private:
+        struct Node{
+            T data;
+            Node* next;
+            Node(T val, Node* n = 0):data(val),next(n){}
+        };
+        Node *head, *tail;
+    public:
+        Queue():head(0),tail(0){}
+        bool empty() const{return head==0;}
+        void enQueue(T val);
+        void addFirst(T val);
+        T deQueue();
+        bool search(T val){
+            for(Node *n=head;n!=0;n=n->next){
+        if(n->data == val) return true;
+    }
+    return false;
+        }
+        void display();
+};
+class QueueException{
+    private:
+        string msg;
+    public:
+        QueueException(string m):msg(m){}
+        string getMessage(){
+            return msg;
+        }
+};
+
+template<class T> void Queue<T>:: enQueue(T val){ //Add Last
+    Node* n = new Node(val);
+    if(empty())
+    {
+        head = n;
+    }
+    else
+    {
+        tail->next = n;
+    }
+    tail = n;
+    
+}
+
+
+template<class T> void Queue<T>:: addFirst(T val){ //Add Last
+    Node* n = new Node(val);
+    if(!empty())
+    {
+        n->next = head;
+    }
+    head = n;
+    
+}
+
+template<class T> T Queue<T>:: deQueue(){ //Delete First
+    if(empty()) throw QueueException("Queue Empty!");
+    T val = head->data;
+    head = head->next;
+    return val;
+}
+
+template<class T> void Queue<T>:: display(){
+    for(Node *n=head;n!=0;n=n->next){
+        cout<<n->data<<" ";
+    }
+}
+class MatrixFromGraph{
+    private:
+        int **matrix;
+        int rows,cols;
+    public:
+        MatrixFromGraph(string input):rows(0),cols(0){  //Assigning Rows columns and set matrix in constructor
+            for(int i =0;input[i];i++){
+                if(input[i]=='\n')rows++;
+                if(rows==0)cols++;
+            }
+            rows++;
+            matrix = new int*[rows]; //initializing dynamic rows
+            
+            for(int i = 0,k=0;i<rows;i++){
+                matrix[i] = new int[cols];
+                for(int j=0;j<cols;j++){
+                    matrix[i][j] = charToInt(input[k]);
+                    k++;
+                }
+                k++;
+            }
+        }
+        
+        int charToInt(char c){
+            switch(c){
+                case '0': return 0;
+                case '1': return 1;
+            }
+        }
+        bool hasEdge(int v1, int v2) const{return matrix[v1][v2]; }
+        void display(){
+            cout<<"Adjacency Matrix:\n________________\n";
+            for(int i = 0;i<rows;i++){
+                for(int j=0;j<cols;j++){
+                    cout<<matrix[i][j]<<" ";
+                }
+                cout<<"\n";
+            }
+        }
+};
+
+int main()
+{
+    string adMatrixString="01110000\n10001000\n10001000\n10000100\n01100010\n00010010\n00001101\n00000010";
+    MatrixFromGraph m(adMatrixString);
+    m.display();
+    Queue<int> queue;
+    int n = 8,visited[n],parent[n];
+    for(int i=0;i<n;i++)visited[i] = 9;
+    queue.enQueue(0);
+    int count = 0;
+    try{
+        cout<<"\n Traversal:\n___________\n";
+    while(!queue.empty()){
+        int peep = queue.deQueue();
+        if (peep ==7) break;
+        //cout<<"peep = "<<peep;
+        visited[count] = peep;count++;
+        for(int i = 0;i<8;i++){
+            if(m.hasEdge(i,peep) == 1)
+            {
+                int found = 0;
+                for(int j = 0;j<count;j++){
+                    if(visited[j] == i)found = 1; //This node visited already
+                }
+                if(!found && !queue.search(i)){queue.enQueue(i); parent[i] = peep;}
+            }
+            
+        }
+        cout<<"Step "<<count<<" : ";queue.display();cout<<endl; //Diplaying the traversal with step
+
+    }
+    } catch(QueueException e){
+        cout<<e.getMessage()<<endl;
+    }
+       cout<<"\nPath from 0-7 :\n____________________\n\n";
+       int i=7;
+       Queue<int> path;
+       path.addFirst(7);
+       while(i!=0){
+           i = parent[i];
+           path.addFirst(i);
+       }
+       path.display();
+    return 0;
+}
